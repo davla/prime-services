@@ -7,11 +7,10 @@ object PrimesUpTo {
       maybePrimes
     }
     else {
-      val filteredPrimes = maybePrimes.filterNot(_ == divisor)
-        .filterNot(_ % divisor == 0)
-      filteredPrimes.headOption.map { newDivisor =>
+      val filteredPrimes = maybePrimes.filter(n => n == divisor || n % divisor != 0)
+      filteredPrimes.find(_ > divisor).map { newDivisor =>
         sieveOfEratosthenes(upTo, newDivisor, filteredPrimes)
-      }.getOrElse(maybePrimes)
+      }.getOrElse(filteredPrimes)
     }
 
   def sieveOfEratosthenes(upTo: Int): Seq[Int] =

@@ -30,6 +30,18 @@ class SieveOfEratosthenesSpec extends AnyWordSpec
     }
 
   "sieveOfEratosthenes" should {
+    /*
+     * This could be made into a property test by checking that the correct
+     * number of primes is returned. However, according to Wikipedia
+     * (https://en.wikipedia.org/wiki/Prime-counting_function), counting the
+     * number of primes up to an upper bound is not a trivial task, making it
+     * unsuited for checking purposes.
+     */
+    "return all the prime numbers less than or equal to the upper bound" in {
+      val expected = Stream(2, 3, 5, 7, 11, 13, 17, 19, 23, 29)
+      PrimesUpTo.sieveOfEratosthenes(30) should equal (expected)
+    }
+
     "only return prime numbers" in {
       forAll (strictlyPositiveInts) { (n: Int) =>
         val primes = PrimesUpTo.sieveOfEratosthenes(n)
