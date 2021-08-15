@@ -37,3 +37,22 @@ However, there is currently only one implementation of the domain logic. This
 is because I'm satisfied with the result, and there is no requirement to
 optimize for efficiency. In such case, more efficient implementations could
 still easily be added and tested.
+
+#### Error handling
+
+Errors in the domain logic are reported via exceptions. This controverse
+decision reflects my "beliefs" on exceptions and partial computations.
+
+My opinion on the topic can be phrased in many different ways, but shortly, I
+don't think that input validation is a good reason to make a computation
+partial.
+
+In most cases invalid input can be considered an unverified precondition of a
+function, rather than an intrinsic property of its semantics. In my view,
+partiality should only be owed to the latter, hence the use of exceptions.
+
+However, I do think as well that this approach is very not pragmatic:
+exceptions are not part of a function's signature (:rage: Java's checked
+exceptions :rage:), which makes them go unnoticed. In larger codebases,
+exceptions flying around are mostly a cause of instability. Nonetheless, this
+is not the case for this small project. :smirk:
