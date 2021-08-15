@@ -13,6 +13,14 @@ and I wanted to refresh my memory. :wink:
 Gradle would have been a valid alternative, but I became quite confident with
 it recently, and I really wanted to use something different.
 
+## Development process
+
+Since this is a solo project, I find it nonsense to use pull requests. However,
+I'm still using git. :grin: This means that features are still developed in
+their own branch, which are then merged into main by what I find most
+appropriate based on the situation (merge commit, squash commit or
+fast-forward).
+
 ## Project structure
 The project comprises three different areas:
 - the main domain logic (prime numbers computation)
