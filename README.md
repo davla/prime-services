@@ -32,3 +32,8 @@ This logic has been split from the rest since:
 The code is organized so that it supports multiple implementation of the logic
 itself. This is reflected in the test suite, which has been generalized into a
 behavior trait, so as to ease code reuse.
+
+However, there is currently only one implementation of the domain logic. This
+is because I'm satisfied with the result, and there is no requirement to
+optimize for efficiency. In such case, more efficient implementations could
+still easily be added and tested.
