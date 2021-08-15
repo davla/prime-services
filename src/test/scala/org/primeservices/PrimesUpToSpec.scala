@@ -14,7 +14,9 @@ trait PrimesUpToBehavior {
    * However, I find that implicits tend to cause unreadable and spaghetti
    * code, hence I prefer not to use them.
    */
-  private val strictlyPositiveInts = Gen.choose(1, 150_000)
+  private val validInput = Gen.choose(2, 150_000)
+
+  private val invalidInput = Gen.choose(Integer.MIN_VALUE, 1)
 
   // Courtesy of Wikipedia: https://en.wikipedia.org/wiki/Primality_test#Simple_methods
   private val prime = new BeMatcher[Int] {
@@ -39,23 +41,29 @@ trait PrimesUpToBehavior {
     }
 
     "only return prime numbers" in {
-      forAll(strictlyPositiveInts) { (n: Int) =>
+      forAll(validInput) { (n: Int) =>
         val primes = computer(n)
         every(primes) shouldBe prime
       }
     }
 
     "only return numbers less than or equal to the upper bound" in {
-      forAll(strictlyPositiveInts) { (n: Int) =>
+      forAll(validInput) { (n: Int) =>
         val primes = computer(n)
         every(primes) should be <= n
       }
     }
 
     "only return positive numbers" in {
-      forAll(strictlyPositiveInts) { (n: Int) =>
+      forAll(validInput) { (n: Int) =>
         val primes = computer(n)
         every(primes) should be > 0
+      }
+    }
+
+    "throw exceptions on input less than two" in {
+      forAll(invalidInput) { (n: Int) =>
+        an[IllegalArgumentException] should be thrownBy computer(n)
       }
     }
   }
