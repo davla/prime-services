@@ -7,10 +7,8 @@ import org.scalatest.matchers.should
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatestplus.scalacheck.ScalaCheckPropertyChecks
 
-class SieveOfEratosthenesSpec
-    extends AnyWordSpec
-    with ScalaCheckPropertyChecks
-    with should.Matchers {
+trait PrimesUpToBehavior {
+  this: AnyWordSpec with ScalaCheckPropertyChecks with should.Matchers =>
   /*
    * This could be an implicit, since it's used in the majority of tests.
    * However, I find that implicits tend to cause unreadable and spaghetti
@@ -27,7 +25,7 @@ class SieveOfEratosthenesSpec
     )
   }
 
-  "sieveOfEratosthenes" should {
+  def primesUpTo(computer: PrimesComputer) {
     /*
      * This could be made into a property test by checking that the correct
      * number of primes is returned. However, according to Wikipedia
@@ -37,28 +35,39 @@ class SieveOfEratosthenesSpec
      */
     "return all the prime numbers less than or equal to the upper bound" in {
       val expected = Stream(2, 3, 5, 7, 11, 13, 17, 19, 23, 29)
-      PrimesUpTo.sieveOfEratosthenes(30) should equal(expected)
+      computer(30) should equal(expected)
     }
 
     "only return prime numbers" in {
       forAll(strictlyPositiveInts) { (n: Int) =>
-        val primes = PrimesUpTo.sieveOfEratosthenes(n)
+        val primes = computer(n)
         every(primes) shouldBe prime
       }
     }
 
     "only return numbers less than or equal to the upper bound" in {
       forAll(strictlyPositiveInts) { (n: Int) =>
-        val primes = PrimesUpTo.sieveOfEratosthenes(n)
+        val primes = computer(n)
         every(primes) should be <= n
       }
     }
 
     "only return positive numbers" in {
       forAll(strictlyPositiveInts) { (n: Int) =>
-        val primes = PrimesUpTo.sieveOfEratosthenes(n)
+        val primes = computer(n)
         every(primes) should be > 0
       }
     }
+  }
+}
+
+class SieveOfEratosthenesSpec
+    extends AnyWordSpec
+    with ScalaCheckPropertyChecks
+    with should.Matchers
+    with PrimesUpToBehavior {
+
+  "sieveOfEratosthenes" should {
+    behave like primesUpTo(PrimesUpTo.sieveOfEratosthenes)
   }
 }
