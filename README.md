@@ -1,6 +1,10 @@
 # prime-services
 Prime-calculating services in REST and gRPC
 
+This project includes a gRPC server that exposes methods to return a sequence
+of prime numbers that are less than or equal to a given upper bound, and a
+companion REST proxy.
+
 ## Build system
 
 This project is built with sbt, mostly because I used it a little in the past
