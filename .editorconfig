@@ -15,5 +15,8 @@ insert_final_newline = true
 indent_size = 2
 trim_trailing_whitespace = false
 
+[*.proto]
+indent_size = 2
+
 [*.scala]
 indent_size = 2

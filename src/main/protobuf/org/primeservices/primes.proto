@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option java_multiple_files = true;
+
+package org.primeservices;
+
+message PrimesRequest {
+  int32 up_to = 1;
+}
+
+message PrimesResponse {
+  repeated int32 primes = 1;
+}
+
+service PrimesService {
+  rpc GetPrimesUpTo(PrimesRequest) returns (PrimesResponse);
+}
