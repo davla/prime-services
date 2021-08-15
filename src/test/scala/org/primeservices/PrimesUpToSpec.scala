@@ -25,7 +25,7 @@ trait PrimesUpToBehavior {
     )
   }
 
-  def primesUpTo(computer: PrimesComputer) {
+  def primesUpTo(computer: PrimesComputer): Unit = {
     /*
      * This could be made into a property test by checking that the correct
      * number of primes is returned. However, according to Wikipedia
@@ -34,7 +34,7 @@ trait PrimesUpToBehavior {
      * unsuited for checking purposes.
      */
     "return all the prime numbers less than or equal to the upper bound" in {
-      val expected = Stream(2, 3, 5, 7, 11, 13, 17, 19, 23, 29)
+      val expected = LazyList(2, 3, 5, 7, 11, 13, 17, 19, 23, 29)
       computer(30) should equal(expected)
     }
 

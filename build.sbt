@@ -6,6 +6,8 @@ scalaVersion := "2.13.6"
 
 lazy val akkaVersion = "2.6.15"
 
+scalacOptions += "-deprecation"
+
 libraryDependencies ++= Seq(
   "com.typesafe.akka" %% "akka-actor-typed" % akkaVersion,
   "ch.qos.logback" % "logback-classic" % "1.2.3",

@@ -21,5 +21,5 @@ object PrimesUpTo {
     }
 
   def sieveOfEratosthenes(upTo: Int): Seq[Int] =
-    sieveOfEratosthenes(upTo, 2, (2 to upTo).toStream)
+    sieveOfEratosthenes(upTo, 2, (2 to upTo).to(LazyList))
 }
