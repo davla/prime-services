@@ -64,3 +64,17 @@ exceptions are not part of a function's signature (:rage: Java's checked
 exceptions :rage:), which makes them go unnoticed. In larger codebases,
 exceptions flying around are mostly a cause of instability. Nonetheless, this
 is not the case for this small project. :smirk:
+
+### gRPC service
+
+The protobuf contracts are defined in `primes.proto`. The gRPC service provides
+a single method `GetPrimesUpTo` that responds with a list of prime numbers
+given a request with an upper bound.
+
+The gRPC service is implemented in the `PrimesGrpcService` class. The service
+is a standard ScalaPB service, processing requests in a serial fashion in the
+same thread where the request is received.
+
+The gRPC server process is implemented in the `PrimeGrpcServer` object. The
+server is an Akka HTTP server, where the glue code between that and the gRPC
+service is provided by the Akka gRPC project.
