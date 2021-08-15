@@ -40,6 +40,17 @@ trait PrimesUpToBehavior {
       computer(30) should equal(expected)
     }
 
+    /*
+     * This could be a property test. However, this generator
+     * ```
+     * validInput.filter(prime.apply(_).matches)
+     * ```
+     * discards too many upstream inputs and the test fails.
+     */
+    "return the upper bound if it is prime" in {
+      computer(5).last should be(5)
+    }
+
     "only return prime numbers" in {
       forAll(validInput) { (n: Int) =>
         val primes = computer(n)
