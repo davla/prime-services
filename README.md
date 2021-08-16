@@ -71,12 +71,18 @@ The protobuf contracts are defined in `primes.proto`. The gRPC service provides
 a single method `GetPrimesUpTo` that responds with a list of prime numbers
 given a request with an upper bound.
 
-The gRPC service is implemented in the `PrimesGrpcService` class. The service
-is a standard ScalaPB service, processing requests in a serial fashion in the
-same thread where the request is received. Errors from the main domain logic
-are reported via `google.rpc.Status` protobuf message type, as defined in the
+The gRPC service is implemented in the `PrimesGrpcService` class. The class
+doesn't contain a full-blown HTTP/2 server that can be executed, but rather
+only the gRPC service logic. This allows straightforward unit testing of the
+gRPC API, without worrying about the HTTP/2 wrapping layer. The service is a
+standard ScalaPB service, processing requests in a serial fashion in the same
+thread where the request is received. Errors from the main domain logic are
+reported via `google.rpc.Status` protobuf message type, as defined in the
 Google API protobuf Error model.
 
-The gRPC server process is implemented in the `PrimesGrpcServer` object. The
-server is an Akka HTTP server, where the glue code between that and the gRPC
-service is provided by the Akka gRPC project.
+The HTTP/2 server is implemented in the `PrimesGrpcServer` object. This is
+where the main method resides, which starts an HTTP/2 server implemented via
+the Akka HTTP library. The glue code between HTTP/2 and gRPC is provided
+instead by the Akka gRPC project. This class is not directly unit tested, since
+it's mostly made of boilerplate code, but rather end-to-end tested together
+with the gRPC client.
