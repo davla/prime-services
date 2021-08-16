@@ -42,7 +42,7 @@ object PrimesGrpcServer {
       .parseString("akka.http.server.preview.enable-http2 = on")
       .withFallback(ConfigFactory.defaultApplication())
     implicit val system =
-      ActorSystem[Nothing](Behaviors.empty, "GreeterServer", conf)
+      ActorSystem[Nothing](Behaviors.empty, "PrimesGrpcServer", conf)
     implicit val ec = system.executionContext
 
     val service = PrimesServiceHandler(PrimesGrpcService())
