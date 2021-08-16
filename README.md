@@ -104,7 +104,14 @@ The routes are defined in the `PrimesRestRoutes` class, so that they are
 separated from the HTTP Server boilerplate code. Once again, the requests are
 processed in a serial fashion, in the same thread where they are received.
 
-The separation of the REST routes also eases unit testing: first, by allowing
-the REST logic to be tested directly, without having to deal with the HTTP
+The separation of the REST routes also eases unit testing: first, by making it
+possible to test the REST logic directly, without having to deal with the HTTP
 server glue code; second by allowing dependency injection of the gRPC client,
 which eases the test fixture setup and the simulation of error scenarios.
+
+The HTTP server backing the routes is implemented in the `PrimesRestServer`
+object. As mentioned before, it is powered by Akka HTTP. Once more, since it is
+mostly glue code, the server itself has not been unit tested. However, unlike
+the gRPC server, this server has not been end-to-end tested, as there's no
+pre-made client available for testing and no need to implement one in the
+system's own logic.
