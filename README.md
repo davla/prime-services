@@ -73,7 +73,9 @@ given a request with an upper bound.
 
 The gRPC service is implemented in the `PrimesGrpcService` class. The service
 is a standard ScalaPB service, processing requests in a serial fashion in the
-same thread where the request is received.
+same thread where the request is received. Errors from the main domain logic
+are reported via `google.rpc.Status` protobuf message type, as defined in the
+Google API protobuf Error model.
 
 The gRPC server process is implemented in the `PrimeGrpcServer` object. The
 server is an Akka HTTP server, where the glue code between that and the gRPC
