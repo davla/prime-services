@@ -15,6 +15,8 @@ class PrimesGrpcServiceSpec
     with MockFactory
     with ScalaFutures {
 
+  implicit val ec = scala.concurrent.ExecutionContext.global
+
   "PrimesGrpcService" should {
     "reply to single requests" in {
       // Given

@@ -90,3 +90,21 @@ the Akka HTTP library. The glue code between HTTP/2 and gRPC is provided
 instead by the Akka gRPC project. This class is not directly unit tested, since
 it's mostly made of boilerplate code, but rather end-to-end tested together
 with the gRPC client.
+
+The gRPC client is again a standard ScalaPB client, whose creation is wrapped
+in the `PrimesGrpcClient` object. Similarly to `PrimesGrpcServer`, this object
+consists mostly of boilerplate code, and is as such not unit tested, but rather
+end-to-end tested together with the gRPC-HTTP/2 server.
+
+### REST service
+
+The REST service is implemented as an Akka HTTP server.
+
+The routes are defined in the `PrimesRestRoutes` class, so that they are
+separated from the HTTP Server boilerplate code. Once again, the requests are
+processed in a serial fashion, in the same thread where they are received.
+
+The separation of the REST routes also eases unit testing: first, by allowing
+the REST logic to be tested directly, without having to deal with the HTTP
+server glue code; second by allowing dependency injection of the gRPC client,
+which eases the test fixture setup and the simulation of error scenarios.
