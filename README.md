@@ -37,6 +37,10 @@ This logic has been split from the rest since:
 - it is independent of the API chosen for the service
 - it improves testability (less mocking, more focus on the logic, etc.)
 
+Testing includes both property and scenario tests. The former has been chosen
+where feasible, being this a mathematical type of logic: whenever scenario
+tests have been written instead, the reasons are explained in a comment.
+
 The code is organized so that it supports multiple implementation of the logic
 itself. This is reflected in the test suite, which has been generalized into a
 behavior trait, so as to ease code reuse.
