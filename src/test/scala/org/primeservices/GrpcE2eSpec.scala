@@ -1,32 +1,39 @@
 package org.primeservices
 
-import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.BeforeAndAfterAll
-import org.scalatest.matchers.should
-import org.scalatest.concurrent.ScalaFutures
+import akka.actor.testkit.typed.scaladsl.ActorTestKit
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
-import akka.actor.testkit.typed.scaladsl.ActorTestKit
+import com.typesafe.config.ConfigFactory
+import io.grpc.Status
+import io.grpc.StatusRuntimeException
+import org.scalatest.BeforeAndAfterAll
+import org.scalatest.concurrent.ScalaFutures
+import org.scalatest.matchers.should
+import org.scalatest.wordspec.AnyWordSpec
 
 import scala.concurrent.duration._
-import io.grpc.StatusRuntimeException
-import io.grpc.Status
 
 class GrpcE2eSpec
-  extends AnyWordSpec
-  with BeforeAndAfterAll
-  with should.Matchers
-  with ScalaFutures {
+    extends AnyWordSpec
+    with BeforeAndAfterAll
+    with should.Matchers
+    with ScalaFutures {
 
-  implicit val patience: PatienceConfig = PatienceConfig(scaled(5.seconds), scaled(100.millis))
-  val serverTestKit = ActorTestKit(PrimesGrpcServer.conf)
+  implicit val patience: PatienceConfig =
+    PatienceConfig(scaled(5.seconds), scaled(100.millis))
+  val serverTestKit = ActorTestKit(
+    ConfigFactory
+      .parseString("akka.http.server.preview.enable-http2 = on")
+      .resolve()
+  )
   val serverSystem = serverTestKit.system
 
   val service = PrimesGrpcServer(serverSystem)
   // make sure server is bound before using client
   service.futureValue
 
-  val clientSystem: ActorSystem[_] = ActorSystem(Behaviors.empty, "GreeterClient")
+  val clientSystem: ActorSystem[_] =
+    ActorSystem(Behaviors.empty, "GreeterClient")
 
   override def afterAll(): Unit = {
     ActorTestKit.shutdown(clientSystem)

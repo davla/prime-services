@@ -1,0 +1,39 @@
+%YAML 1.2
+---
+version: '3.9'
+
+# Shared configuration for building the docker image
+x-build: &build
+  build:
+    context: .
+    dockerfile: ./docker/Dockerfile
+  image: 'davla/prime-services:latest'
+
+services:
+  grpc:
+    <<: *build
+    command:
+    - '-Dserver-interface=0.0.0.0'
+    - 'runMain org.primeservices.PrimesGrpcServer'
+
+  rest:
+    <<: *build
+    depends_on:
+    - grpc
+
+    ports:
+    - target: 80
+      published: 5000
+      protocol: tcp
+      mode: host
+
+    command:
+    - '-Dserver-interface=0.0.0.0'
+    - '-Dprimes.grpc.host=grpc'
+    - 'runMain org.primeservices.PrimesRestServer'
+
+  test:
+    <<: *build
+    command: test
+    profiles:
+    - test

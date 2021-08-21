@@ -18,5 +18,11 @@ trim_trailing_whitespace = false
 [*.proto]
 indent_size = 2
 
+[*.sbt]
+indent_size = 2
+
 [*.scala]
+indent_size = 2
+
+[*.y{a,}ml]
 indent_size = 2
