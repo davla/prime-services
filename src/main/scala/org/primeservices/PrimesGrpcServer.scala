@@ -4,14 +4,15 @@ import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import akka.stream.Materializer
+import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import io.grpc.Status
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.util.Failure
 import scala.util.Success
 import scala.util.Try
-import scala.concurrent.ExecutionContext
 
 class PrimesGrpcService(private val computer: PrimesComputer)(implicit
     val ec: ExecutionContext
@@ -40,12 +41,6 @@ object PrimesGrpcService {
 }
 
 object PrimesGrpcServer {
-  implicit val conf = ConfigFactory
-    .parseString("akka.http.server.preview.enable-http2 = on")
-    .withFallback(ConfigFactory.defaultApplication())
-  implicit val system: ActorSystem[Nothing] =
-    ActorSystem[Nothing](Behaviors.empty, "PrimesGrpcServer", conf)
-
   def apply(implicit
       system: ActorSystem[Nothing]
   ): Future[Http.ServerBinding] = {
@@ -53,7 +48,10 @@ object PrimesGrpcServer {
 
     val service = PrimesServiceHandler(PrimesGrpcService()(ec))
 
-    val binding = Http().newServerAt("127.0.0.1", 8080).bind(service)
+    val config = ConfigFactory.load().resolve()
+    val interface = config.getString("primes.grpc.interface")
+    val port = config.getInt("primes.grpc.port")
+    val binding = Http().newServerAt(interface, port).bind(service)
     binding.onComplete {
       case Success(binding) =>
         val address = binding.localAddress
@@ -69,6 +67,14 @@ object PrimesGrpcServer {
   }
 
   def main(args: Array[String]): Unit = {
+    implicit val conf = ConfigFactory
+      // We need to make sure that HTTP/2 is enabled for gRPC to work
+      .parseString("akka.http.server.preview.enable-http2 = on")
+      .resolve()
+      .withFallback(ConfigFactory.load().resolve())
+    implicit val system: ActorSystem[Nothing] =
+      ActorSystem[Nothing](Behaviors.empty, "PrimesGrpcServer", conf)
+
     apply
   }
 }

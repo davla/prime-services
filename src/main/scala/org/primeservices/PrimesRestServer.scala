@@ -1,12 +1,15 @@
 package org.primeservices
 
-import akka.http.scaladsl.server.Route
-import akka.http.scaladsl.server.Directives._
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
-import scala.util.Success
+import akka.http.scaladsl.server.Directives._
+import akka.http.scaladsl.server.Route
+import com.typesafe.config.Config
+import com.typesafe.config.ConfigFactory
+
 import scala.util.Failure
+import scala.util.Success
 
 class PrimesRestRoutes(private val grpcClient: PrimesServiceClient) {
   def routes = pathPrefix("prime") {
@@ -35,7 +38,11 @@ object PrimesRestServer {
     // Akka HTTP still needs a classic ActorSystem to start
     import system.executionContext
 
-    val futureBinding = Http().newServerAt("localhost", 8081).bind(routes)
+    val config = ConfigFactory.load().resolve()
+    val interface = config.getString("primes.rest.interface")
+    val port = config.getInt("primes.rest.port")
+    val futureBinding = Http().newServerAt(interface, port).bind(routes)
+
     futureBinding.onComplete {
       case Success(binding) =>
         val address = binding.localAddress
