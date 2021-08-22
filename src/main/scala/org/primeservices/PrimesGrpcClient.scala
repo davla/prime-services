@@ -3,7 +3,6 @@ package org.primeservices
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.grpc.GrpcClientSettings
-import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 
 object PrimesGrpcClient {

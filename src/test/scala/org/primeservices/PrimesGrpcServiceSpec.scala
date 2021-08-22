@@ -3,14 +3,12 @@ package org.primeservices
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import org.scalamock.scalatest.MockFactory
-import org.scalatest.BeforeAndAfterEach
 import org.scalatest.concurrent.ScalaFutures
 import org.scalatest.matchers.should
 import org.scalatest.wordspec.AnyWordSpec
 
 class PrimesGrpcServiceSpec
     extends AnyWordSpec
-    with BeforeAndAfterEach
     with should.Matchers
     with MockFactory
     with ScalaFutures {
@@ -41,7 +39,7 @@ class PrimesGrpcServiceSpec
       val input = -10
 
       val computePrimes = mockFunction[Int, Seq[Int]]
-      computePrimes expects(input) throws new IllegalArgumentException()
+      computePrimes expects (input) throws new IllegalArgumentException()
 
       val service = PrimesGrpcService(computePrimes)
 
@@ -61,7 +59,7 @@ class PrimesGrpcServiceSpec
       val input = -10
 
       val computePrimes = mockFunction[Int, Seq[Int]]
-      computePrimes expects(input) throws new RuntimeException()
+      computePrimes expects (input) throws new RuntimeException()
 
       val service = PrimesGrpcService(computePrimes)
 

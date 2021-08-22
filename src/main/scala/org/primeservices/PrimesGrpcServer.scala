@@ -3,8 +3,6 @@ package org.primeservices
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
-import akka.stream.Materializer
-import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 import io.grpc.Status
 
@@ -12,7 +10,6 @@ import scala.concurrent.ExecutionContext
 import scala.concurrent.Future
 import scala.util.Failure
 import scala.util.Success
-import scala.util.Try
 
 class PrimesGrpcService(private val computer: PrimesComputer)(implicit
     val ec: ExecutionContext
