@@ -1,5 +1,6 @@
 package org.primeservices
 
+import akka.actor.testkit.typed.scaladsl.LogCapturing
 import io.grpc.Status
 import io.grpc.StatusRuntimeException
 import org.scalamock.scalatest.MockFactory
@@ -11,7 +12,8 @@ class PrimesGrpcServiceSpec
     extends AnyWordSpec
     with should.Matchers
     with MockFactory
-    with ScalaFutures {
+    with ScalaFutures
+    with LogCapturing {
 
   implicit val ec = scala.concurrent.ExecutionContext.global
 

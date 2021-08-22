@@ -1,6 +1,7 @@
 package org.primeservices
 
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
+import akka.actor.testkit.typed.scaladsl.LogCapturing
 import akka.actor.typed.ActorSystem
 import akka.actor.typed.scaladsl.Behaviors
 import com.typesafe.config.ConfigFactory
@@ -17,7 +18,8 @@ class GrpcE2eSpec
     extends AnyWordSpec
     with BeforeAndAfterAll
     with should.Matchers
-    with ScalaFutures {
+    with ScalaFutures
+    with LogCapturing {
 
   implicit val patience: PatienceConfig =
     PatienceConfig(scaled(5.seconds), scaled(100.millis))

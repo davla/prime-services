@@ -1,5 +1,6 @@
 package org.primeservices
 
+import akka.actor.testkit.typed.scaladsl.LogCapturing
 import org.scalacheck.Gen
 import org.scalatest.matchers.BeMatcher
 import org.scalatest.matchers.MatchResult
@@ -84,7 +85,8 @@ class SieveOfEratosthenesSpec
     extends AnyWordSpec
     with ScalaCheckPropertyChecks
     with should.Matchers
-    with PrimesUpToBehavior {
+    with PrimesUpToBehavior
+    with LogCapturing {
 
   "sieveOfEratosthenes" should {
     behave like primesUpTo(PrimesUpTo.sieveOfEratosthenes)
