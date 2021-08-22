@@ -155,7 +155,13 @@ below) and then transforming its reply to make it fit the Akka HTTP model.
 The `PrimesBackend` actor is a straightforward actor-model wrapper around the
 future-based API exposed by the gRPC `PrimesServiceClient`. It mainly leverages
 the Akka `ActorContext.pipeToSelf` method to receive the results from the gRPC
-calls results as messages, whose content is then forwarded as replies.
+calls as messages, whose content is then forwarded as replies. The actor
+doesn't spawn children to handle incoming messages, but rather executes the
+processing directly. Indeed such processing consists mostly of task-based
+asynchronous I/O operations, which can be executed directly in the actor system
+execution context, without the need to wrap them into a child actor. In order
+not to overload the gRPC server with requests, a simple client-side capping
+mechanism on the number of pending requests has been implemented.
 
 The REST routes are separated from the HTTP Server boilerplate code both to
 clarify where the actual business logic is, and to ease unit testing: first, by
