@@ -18,6 +18,7 @@ class PrimesBackendSpec
     with LogCapturing {
 
   import PrimesBackend._
+  val maxPendingGrpcRequests = 10
 
   "PrimesBackend" should {
     "reply to GetPrimes with Success on successful gRPC response" in {
@@ -32,7 +33,10 @@ class PrimesBackendSpec
         PrimesResponse(result)
       )
 
-      val backend = spawn(PrimesBackend(grpcClient), "PrimesBackendSuccess")
+      val backend = spawn(
+        PrimesBackend(grpcClient, maxPendingGrpcRequests),
+        "PrimesBackendSuccess"
+      )
 
       backend ! GetPrimes(input, backendClient.ref)
 
@@ -51,11 +55,28 @@ class PrimesBackendSpec
         failure
       )
 
-      val backend = spawn(PrimesBackend(grpcClient), "PrimesBackendFailure")
+      val backend = spawn(
+        PrimesBackend(grpcClient, maxPendingGrpcRequests),
+        "PrimesBackendFailure"
+      )
 
       backend ! GetPrimes(input, backendClient.ref)
 
       backendClient.expectMessage(StatusReply.error(failure))
+    }
+
+    "reply to GetPrimes with Error if there are too many pending gRPC requests" in {
+      val input = 5
+
+      val backendClient = createTestProbe[PrimesBackend.Reply]()
+      val grpcClient = mock[PrimesServiceClient]
+
+      val backend =
+        spawn(PrimesBackend(grpcClient, 0), "PrimesBackendTooManyRequests")
+
+      backend ! GetPrimes(input, backendClient.ref)
+
+      backendClient.receiveMessage().isError should be(true)
     }
   }
 }
