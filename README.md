@@ -27,53 +27,21 @@ sbt 'runMain org.primesservices.PrimesGrpcServer'
 sbt 'runMain org.primesservices.PrimesRestServer'
 ```
 
-### Docker
-
-In order to make it easier to run and test the services without having the
-build tools installed on the local machine, a Docker image has been created.
-The image contains the project compilation output ready to be executed, and
-it's available on Docker Hub as [davla/prime-services](https://hub.docker.com/repository/docker/davla/prime-services).
-The image is by no means intended for production use, mostly because I don't
-have the knowledge to make it so. :grimacing:
-
-A docker-compose file is also provided, as a form of "executable documentation"
-on how containers should be created from the docker image to run and test the
-services. There are three services defined in `docker-compose.yml`:
-
-- `grpc` - the gRPC server
-- `rest` - the rest server
-- `test` - convenience service to run the tests
-
-`grpc` and `rest` can be run together on the same host by means of
-`docker-compose up`, and individually via `docker-compose run`. `test` is not
-executed by default with `docker-compose up`, and it's meant to only be run
-individually. It's worth mentioning that when running within docker, as opposed
-to locally, some configuration parameters need to be different, and are thus
-overridden via CLI arguments to the container command. This is shown in the
-docker-compose file.
-
-Both `Dockerfile` and `docker-compose.yml` have been written by hand, rather
-than auto-generated via sbt plugins like `sbt-docker`. This is because I know
-Docker well enough to be able to configure it by myself, and I see no point in
-relaying the configuration through third-party integrations if I can carry out
-the job efficiently myself. In general, I believe that if you use a tool
-extensively in your daily job, you should spend the due time to learn to use it
-directly, without relying on third-party integration with the rest of the
-tooling you use.
-
-## Development process
-
-Since this is a solo project, I find it nonsense to use pull requests. However,
-I'm still using git. :grin: This means that features are still developed in
-their own branch, which are then merged into main by what I find most
-appropriate based on the situation (merge commit, squash commit or
-fast-forward).
-
 ## Project structure
 The project comprises three different areas:
 - the main domain logic (prime numbers computation)
 - the gRPC service
 - the REST proxy service
+
+While the main domain logic leverages solely the Scala standard library, both
+the gRPC and the REST services are implemented using the plain Akka platform.
+
+I purposefully chose not to use higher-level frameworks such as Logom, mostly
+because I don't have the necessary knowledge in building microservices to
+assess whether this type of frameworks would fit my use-case. In fact,
+high-level frameworks tend to be more opinionated than generalist platforms
+like Akka, making specific use-cases very simple to handle, but at the same
+time making everything else extremely hard.
 
 ### Main domain logic
 The main domain logic is implemented in the `PrimesUpTo` object.
@@ -180,3 +148,45 @@ mostly glue code, the server itself has not been unit tested. However, unlike
 the gRPC server, this server has not been end-to-end tested, as there's no
 pre-made client available for testing and no need to implement one in the
 system's own logic.
+
+## Docker
+
+In order to make it easier to run and test the services without having the
+build tools installed on the local machine, a Docker image has been created.
+The image contains the project compilation output ready to be executed, and
+it's available on Docker Hub as [davla/prime-services](https://hub.docker.com/repository/docker/davla/prime-services).
+The image is by no means intended for production use, mostly because I don't
+have the knowledge to make it so. :grimacing:
+
+A docker-compose file is also provided, as a form of "executable documentation"
+on how containers should be created from the docker image to run and test the
+services. There are three services defined in `docker-compose.yml`:
+
+- `grpc` - the gRPC server
+- `rest` - the rest server
+- `test` - convenience service to run the tests
+
+`grpc` and `rest` can be run together on the same host by means of
+`docker-compose up`, and individually via `docker-compose run`. `test` is not
+executed by default with `docker-compose up`, and it's meant to only be run
+individually. It's worth mentioning that when running within docker, as opposed
+to locally, some configuration parameters need to be different, and are thus
+overridden via CLI arguments to the container command. This is shown in the
+docker-compose file.
+
+Both `Dockerfile` and `docker-compose.yml` have been written by hand, rather
+than auto-generated via sbt plugins like `sbt-docker`. This is because I know
+Docker well enough to be able to configure it by myself, and I see no point in
+relaying the configuration through third-party integrations if I can carry out
+the job efficiently myself. In general, I believe that if you use a tool
+extensively in your daily job, you should spend the due time to learn to use it
+directly, without relying on third-party integration with the rest of the
+tooling you use.
+
+## Development process
+
+Since this is a solo project, I find it nonsense to use pull requests. However,
+I'm still using git. :grin: This means that features are still developed in
+their own branch, which are then merged into main by what I find most
+appropriate based on the situation (merge commit, squash commit or
+fast-forward).
