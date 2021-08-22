@@ -75,6 +75,16 @@ The project comprises three different areas:
 - the gRPC service
 - the REST proxy service
 
+While the main domain logic leverages solely the Scala standard library, both
+the gRPC and the REST services are implemented using the plain Akka platform.
+
+I purposefully chose not to use higher-level frameworks such as Logom, mostly
+because I don't have the necessary knowledge in building microservices to
+assess whether this type of frameworks would fit my use-case. In fact,
+high-level frameworks tend to be more opinionated than generalist platforms
+like Akka, making specific use-cases very simple to handle, but at the same
+time making everything else extremely hard.
+
 ### Main domain logic
 The main domain logic is implemented in the `PrimesUpTo` object.
 
