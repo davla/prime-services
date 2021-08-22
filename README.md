@@ -148,14 +148,27 @@ end-to-end tested together with the gRPC-HTTP/2 server.
 
 The REST service is implemented as an Akka HTTP server.
 
-The routes are defined in the `PrimesRestRoutes` class, so that they are
-separated from the HTTP Server boilerplate code. Once again, the requests are
-processed in a serial fashion, in the same thread where they are received.
+The routes are defined in the `PrimesRestRoutes` class. Each request is served
+by sending the appropriate message to a single `PrimesBackend` actor (described
+below) and then transforming its reply to make it fit the Akka HTTP model.
 
-The separation of the REST routes also eases unit testing: first, by making it
-possible to test the REST logic directly, without having to deal with the HTTP
-server glue code; second by allowing dependency injection of the gRPC client,
-which eases the test fixture setup and the simulation of error scenarios.
+The `PrimesBackend` actor is a straightforward actor-model wrapper around the
+future-based API exposed by the gRPC `PrimesServiceClient`. It mainly leverages
+the Akka `ActorContext.pipeToSelf` method to receive the results from the gRPC
+calls as messages, whose content is then forwarded as replies. The actor
+doesn't spawn children to handle incoming messages, but rather executes the
+processing directly. Indeed such processing consists mostly of task-based
+asynchronous I/O operations, which can be executed directly in the actor system
+execution context, without the need to wrap them into a child actor. In order
+not to overload the gRPC server with requests, a simple client-side capping
+mechanism on the number of pending requests has been implemented.
+
+The REST routes are separated from the HTTP Server boilerplate code both to
+clarify where the actual business logic is, and to ease unit testing: first, by
+making it possible to test the REST logic directly, without having to deal with
+the HTTP server glue code; second by allowing dependency injection of the gRPC
+client, which eases the test fixture setup and the simulation of error
+scenarios.
 
 The HTTP server backing the routes is implemented in the `PrimesRestServer`
 object. As mentioned before, it is powered by Akka HTTP. Once more, since it is
