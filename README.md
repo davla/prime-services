@@ -150,7 +150,11 @@ The REST service is implemented as an Akka HTTP server.
 
 The routes are defined in the `PrimesRestRoutes` class. Each request is served
 by sending the appropriate message to a single `PrimesBackend` actor (described
-below) and then transforming its reply to make it fit the Akka HTTP model.
+below) and then transforming its reply to make it fit the Akka HTTP model. No
+input validation is performed in the REST service itself, so that the
+validation logic is not duplicated. All the errors come from the
+`PrimesBackend` actor, and are then mapped to appropriate HTTP status codes
+(e.g. invalid inputs are reported as "401 Bad Request").
 
 The `PrimesBackend` actor is a straightforward actor-model wrapper around the
 future-based API exposed by the gRPC `PrimesServiceClient`. It mainly leverages

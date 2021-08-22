@@ -1,28 +1,23 @@
 package org.primeservices
 
-import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.concurrent.ScalaFutures
-import org.scalatest.matchers.should
-import akka.http.scaladsl.testkit.ScalatestRouteTest
-import org.scalamock.scalatest.proxy.MockFactory
-import scala.concurrent.Future
-import akka.http.scaladsl.model.StatusCodes
-import akka.actor.testkit.typed.scaladsl.ScalaTestWithActorTestKit
-import org.scalatest.wordspec.AnyWordSpecLike
-import akka.actor.typed.Scheduler
-import akka.actor.typed.ActorSystem
 import akka.actor.testkit.typed.scaladsl.ActorTestKit
+import akka.actor.testkit.typed.scaladsl.LogCapturing
 import akka.actor.typed.scaladsl.Behaviors
+import akka.http.scaladsl.model.StatusCodes
+import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.ValidationRejection
+import akka.http.scaladsl.testkit.ScalatestRouteTest
 import akka.pattern.StatusReply
 import org.scalatest.BeforeAndAfterAll
+import org.scalatest.matchers.should
+import org.scalatest.wordspec.AnyWordSpec
 
 class PrimesRestRoutesSpec
     extends AnyWordSpec
     with BeforeAndAfterAll
     with should.Matchers
-    with ScalaFutures
-    with ScalatestRouteTest {
+    with ScalatestRouteTest
+    with LogCapturing {
 
   lazy val testKit = ActorTestKit()
 
@@ -32,7 +27,6 @@ class PrimesRestRoutesSpec
   override def createActorSystem(): akka.actor.ActorSystem =
     testKit.system.classicSystem
 
-//   implicit val executionContext = typedSystem.executionContext
   implicit val scheduler = typedSystem.scheduler
 
   override def afterAll(): Unit = testKit.shutdownTestKit()
@@ -49,7 +43,8 @@ class PrimesRestRoutesSpec
           Behaviors.same
       }
       val probe = testKit.createTestProbe[PrimesBackend.Method]()
-      val primesBackend = testKit.spawn(Behaviors.monitor(probe.ref, backendBehavior))
+      val primesBackend =
+        testKit.spawn(Behaviors.monitor(probe.ref, backendBehavior))
 
       val routes = PrimesRestRoutes(primesBackend.ref)
 
@@ -59,22 +54,54 @@ class PrimesRestRoutesSpec
       }
     }
 
-    "return errors on invalid input" in {
+    "reject GET /prime/<number> with ValidationRejection for invalid input" in {
+      val input = 0
+      val errorMsg = "Invalid input: 0"
+
+      val backendBehavior = Behaviors.receiveMessage[PrimesBackend.Method] {
+        case PrimesBackend.GetPrimes(upTo, replyTo) =>
+          upTo should be(0)
+          replyTo ! StatusReply.Error(new IllegalArgumentException(errorMsg))
+          Behaviors.same
+      }
+      val probe = testKit.createTestProbe[PrimesBackend.Method]()
+      val primesBackend =
+        testKit.spawn(Behaviors.monitor(probe.ref, backendBehavior))
+
+      val routes = PrimesRestRoutes(primesBackend.ref)
+
+      Get(s"/prime/$input") ~> routes ~> check {
+        rejection shouldBe a[ValidationRejection]
+      }
+    }
+
+    "respond to GET /prime/<number> with InternalServerError for other errors" in {
       val input = 0
 
       val backendBehavior = Behaviors.receiveMessage[PrimesBackend.Method] {
         case PrimesBackend.GetPrimes(upTo, replyTo) =>
           upTo should be(0)
-          replyTo ! StatusReply.Error(new IllegalArgumentException())
+          replyTo ! StatusReply.Error(new RuntimeException())
           Behaviors.same
       }
       val probe = testKit.createTestProbe[PrimesBackend.Method]()
-      val primesBackend = testKit.spawn(Behaviors.monitor(probe.ref, backendBehavior))
+      val primesBackend =
+        testKit.spawn(Behaviors.monitor(probe.ref, backendBehavior))
 
       val routes = PrimesRestRoutes(primesBackend.ref)
 
       Get(s"/prime/$input") ~> routes ~> check {
         status should be(StatusCodes.InternalServerError)
+      }
+    }
+
+    "reject any other route with an empty rejection set (Resouce not found)" in {
+      val primesBackend = testKit.createTestProbe[PrimesBackend.Method]()
+
+      val routes = PrimesRestRoutes(primesBackend.ref)
+
+      Get(s"/route") ~> routes ~> check {
+        rejections shouldBe empty
       }
     }
   }

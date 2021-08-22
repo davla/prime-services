@@ -9,6 +9,7 @@ import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.ValidationRejection
 import akka.pattern.StatusReply
 import akka.util.Timeout
 import com.typesafe.config.ConfigFactory
@@ -97,9 +98,15 @@ object PrimesRestRoutes {
         get {
           implicit val timeout: Timeout = 5.seconds
 
-          val response =
-            backend.askWithStatus(GetPrimes(upTo)).map(_.mkString(sep = ","))
-          complete(response)
+          onComplete(backend.askWithStatus(GetPrimes(upTo))) {
+            case Success(primes) =>
+              complete(primes.mkString(sep = ","))
+            case Failure(ex: IllegalArgumentException) =>
+              reject(
+                new ValidationRejection(s"Invalid input ${upTo}", Some(ex))
+              )
+            case Failure(ex) => throw ex
+          }
         }
       }
     }
