@@ -152,6 +152,11 @@ The routes are defined in the `PrimesRestRoutes` class, so that they are
 separated from the HTTP Server boilerplate code. Once again, the requests are
 processed in a serial fashion, in the same thread where they are received.
 
+No input validation is performed in the REST service itself, so that the
+validation logic is not duplicated. All the errors come from the
+`PrimesBackend` actor, and are then mapped to appropriate HTTP status codes
+(e.g. invalid inputs are reported as "401 Bad Request").
+
 The separation of the REST routes also eases unit testing: first, by making it
 possible to test the REST logic directly, without having to deal with the HTTP
 server glue code; second by allowing dependency injection of the gRPC client,
