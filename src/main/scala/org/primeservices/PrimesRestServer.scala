@@ -1,35 +1,38 @@
 package org.primeservices
 
+import akka.actor.typed.ActorRef
 import akka.actor.typed.ActorSystem
+import akka.actor.typed.Behavior
+import akka.actor.typed.Scheduler
+import akka.actor.typed.scaladsl.AskPattern._
 import akka.actor.typed.scaladsl.Behaviors
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.server.Directives._
 import akka.http.scaladsl.server.Route
+import akka.http.scaladsl.server.ValidationRejection
+import akka.pattern.StatusReply
+import akka.util.Timeout
 import com.typesafe.config.Config
 import com.typesafe.config.ConfigFactory
 
+import scala.concurrent.ExecutionContext
+import scala.concurrent.duration._
 import scala.util.Failure
 import scala.util.Success
-import akka.actor.typed.ActorRef
-import scala.concurrent.ExecutionContext
-import akka.pattern.StatusReply
-import akka.util.Timeout
-
-import akka.actor.typed.scaladsl.AskPattern._
-import scala.concurrent.duration._
-import akka.actor.typed.Behavior
-import akka.actor.typed.Scheduler
 
 object PrimesBackend {
   type Reply = StatusReply[Seq[Int]]
 
   trait Method
   case class GetPrimes(upTo: Int, replyTo: ActorRef[Reply]) extends Method
-  private case class Primes(primes: Seq[Int], replyTo: ActorRef[Reply]) extends Method
-  private case class Error(reason: Throwable, replyTo: ActorRef[Reply]) extends Method
+  private case class Primes(primes: Seq[Int], replyTo: ActorRef[Reply])
+      extends Method
+  private case class Error(reason: Throwable, replyTo: ActorRef[Reply])
+      extends Method
 
   object GetPrimes {
-    def apply(upTo: Int) = (replyTo: ActorRef[Reply]) => new GetPrimes(upTo, replyTo)
+    def apply(upTo: Int) = (replyTo: ActorRef[Reply]) =>
+      new GetPrimes(upTo, replyTo)
   }
 
   def apply(grpcClient: PrimesServiceClient): Behavior[Method] =
@@ -41,7 +44,7 @@ object PrimesBackend {
           val futurePrimes = grpcClient.getPrimesUpTo(PrimesRequest(upTo))
           context.pipeToSelf(futurePrimes) {
             case Success(PrimesResponse(primes, _)) => Primes(primes, replyTo)
-            case Failure(ex) => Error(ex, replyTo)
+            case Failure(ex)                        => Error(ex, replyTo)
           }
 
         case Primes(primes, replyTo) =>
@@ -61,14 +64,23 @@ object PrimesBackend {
 object PrimesRestRoutes {
   import PrimesBackend._
 
-  def apply(backend: ActorRef[PrimesBackend.Method])(implicit ec: ExecutionContext, scheduler: Scheduler) =
+  def apply(
+      backend: ActorRef[PrimesBackend.Method]
+  )(implicit ec: ExecutionContext, scheduler: Scheduler) =
     pathPrefix("prime") {
       path(IntNumber) { upTo: Int =>
         get {
           implicit val timeout: Timeout = 5.seconds
 
-          val response = backend.askWithStatus(GetPrimes(upTo)).map(_.mkString(sep = ","))
-          complete(response)
+          onComplete(backend.askWithStatus(GetPrimes(upTo))) {
+            case Success(primes) =>
+              complete(primes.mkString(sep = ","))
+            case Failure(ex: IllegalArgumentException) =>
+              reject(
+                new ValidationRejection(s"Invalid input ${upTo}", Some(ex))
+              )
+            case Failure(ex) => throw ex
+          }
         }
       }
     }
