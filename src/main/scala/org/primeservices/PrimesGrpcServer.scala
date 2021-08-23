@@ -19,13 +19,12 @@ class PrimesGrpcService(private val computer: PrimesComputer)(implicit
     Future(computer(in.upTo))
       .transform(
         s = PrimesResponse(_),
-        f = { error =>
-          (error match {
-            case _ if error.isInstanceOf[IllegalArgumentException] =>
-              Status.INVALID_ARGUMENT
-                .augmentDescription(error.getMessage())
-            case _ => Status.fromThrowable(error)
-          }).asRuntimeException()
+        f = {
+          case ex: IllegalArgumentException =>
+            Status.INVALID_ARGUMENT
+              .augmentDescription(ex.getMessage())
+              .asRuntimeException()
+          case ex => Status.fromThrowable(ex).asRuntimeException()
         }
       )
 }
@@ -52,11 +51,13 @@ object PrimesGrpcServer {
     binding.onComplete {
       case Success(binding) =>
         val address = binding.localAddress
-        println(
-          s"gRPC server bound to ${address.getHostString}:${address.getPort}"
+        system.log.info(
+          "Server online at http://{}:{}/",
+          address.getHostString,
+          address.getPort
         )
       case Failure(ex) =>
-        println(s"Failed to bind gRPC endpoint, terminating system: $ex")
+        system.log.error("Failed to bind HTTP endpoint, terminating system", ex)
         system.terminate()
     }
 
