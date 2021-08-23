@@ -45,7 +45,7 @@ class PrimesBackendSpec
 
     "reply to GetPrimes with Error on gRPC failures" in {
       val input = 5
-      val failure = Status.INVALID_ARGUMENT.asRuntimeException()
+      val failure = Status.INVALID_ARGUMENT.asRuntimeException
 
       val backendClient = createTestProbe[PrimesBackend.Reply]()
 

@@ -22,9 +22,9 @@ class PrimesGrpcService(private val computer: PrimesComputer)(implicit
         f = {
           case ex: IllegalArgumentException =>
             Status.INVALID_ARGUMENT
-              .augmentDescription(ex.getMessage())
-              .asRuntimeException()
-          case ex => Status.fromThrowable(ex).asRuntimeException()
+              .augmentDescription(ex.getMessage)
+              .asRuntimeException
+          case ex => Status.fromThrowable(ex).asRuntimeException
         }
       )
 }
@@ -44,7 +44,7 @@ object PrimesGrpcServer {
 
     val service = PrimesServiceHandler(PrimesGrpcService()(ec))
 
-    val config = ConfigFactory.load().resolve()
+    val config = ConfigFactory.load.resolve
     val interface = config.getString("primes.grpc.interface")
     val port = config.getInt("primes.grpc.port")
     val binding = Http().newServerAt(interface, port).bind(service)
@@ -68,8 +68,8 @@ object PrimesGrpcServer {
     implicit val conf = ConfigFactory
       // We need to make sure that HTTP/2 is enabled for gRPC to work
       .parseString("akka.http.server.preview.enable-http2 = on")
-      .resolve()
-      .withFallback(ConfigFactory.load().resolve())
+      .resolve
+      .withFallback(ConfigFactory.load.resolve)
     implicit val system: ActorSystem[Nothing] =
       ActorSystem[Nothing](Behaviors.empty, "PrimesGrpcServer", conf)
 
