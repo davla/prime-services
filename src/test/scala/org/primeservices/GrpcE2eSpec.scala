@@ -49,15 +49,19 @@ class GrpcE2eSpec
       reply.futureValue should equal(PrimesResponse(Vector(2, 3, 5)))
     }
 
+    /*
+     * This test will fail. See README.md ("gRPC service" section, last
+     * paragraph) for more information.
+     */
     "report INVALID_ARGUMENT on invalid input" in {
       val client = PrimesGrpcClient(clientSystem)
       val reply = client.getPrimesUpTo(PrimesRequest(-10))
 
       val error = reply.failed.futureValue
       error shouldBe a[StatusRuntimeException]
-      // val errorCode =
-      //   error.asInstanceOf[StatusRuntimeException].getStatus.getCode
-      // errorCode should equal(Status.Code.INVALID_ARGUMENT)
+      val errorCode =
+        error.asInstanceOf[StatusRuntimeException].getStatus.getCode
+      errorCode should equal(Status.Code.INVALID_ARGUMENT)
     }
   }
 }

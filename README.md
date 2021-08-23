@@ -54,7 +54,7 @@ This logic has been split from the rest since:
 - it improves testability (less mocking, more focus on the logic, etc.)
 
 Testing includes both property and scenario tests. The former has been chosen
-where feasible, being this a mathematical type of logic: whenever scenario
+where feasible, being this a mathematical type of logic. Whenever scenario
 tests have been written instead, the reasons are explained in a comment.
 
 The code is organized so that it supports multiple implementation of the logic
@@ -94,11 +94,22 @@ given a request with an upper bound.
 The gRPC service is implemented in the `PrimesGrpcService` class. The class
 doesn't contain a full-blown HTTP/2 server that can be executed, but rather
 only the gRPC service logic. This allows straightforward unit testing of the
-gRPC API, without worrying about the HTTP/2 wrapping layer. The service is a
-standard ScalaPB service, processing requests in a serial fashion in the same
-thread where the request is received. Errors from the main domain logic are
-reported via `google.rpc.Status` protobuf message type, as defined in the
-Google API protobuf Error model.
+gRPC API, without worrying about the HTTP/2 wrapping layer.
+
+The service is a standard ScalaPB service, which processes each request as an
+asynchronous task by means of scala `Future`s. This behavior could have been
+wrapped in an actor-model pattern utilizing the same approach as the REST
+service (described below), which is based on Akka's `ActorContext.pipeToSelf`.
+However, this has not been done due to lack of time and close analogy with
+another part of the system. The scatter-gather pattern was also considered as
+an alternative. Nonetheless, it has not been chosen, as the pattern is mostly
+advantageous for parallelized algorithms that can be partitioned across
+different actors, which is not the case for our domain logic algorithm.
+
+The gRPC service doesn't perform any input validation itself, delegating that
+to the domain logic, in order not to duplicate the validation logic. Errors
+from the main domain logic are reported via `google.rpc.Status` protobuf
+message type, as defined in the Google API protobuf Error model.
 
 The HTTP/2 server is implemented in the `PrimesGrpcServer` object. This is
 where the main method resides, which starts an HTTP/2 server implemented via
@@ -111,6 +122,17 @@ The gRPC client is again a standard ScalaPB client, whose creation is wrapped
 in the `PrimesGrpcClient` object. Similarly to `PrimesGrpcServer`, this object
 consists mostly of boilerplate code, and is as such not unit tested, but rather
 end-to-end tested together with the gRPC-HTTP/2 server.
+
+In spite of end-to-end testing, the gRPC client-server interaction still
+doesn't work exactly as expected. The `INVALID_ARGUMENT` error sent by the
+server as a reaction to `IllegalArgumentException` from the domain logic is not
+propagated by the ScalaPB-generated gRPC client, which reports a generic
+`INTERNAL` error. This might be [by design](https://cloud.google.com/apis/design/errors#propagating_errors),
+and it would hence require further investigation, which has not been carried
+out due to lack of time. Nevertheless, unit tests still account for
+`INVALID_ARGUMENT` to be handled differently: not only testing should be not
+concerned with implementation details, but also the components in a
+microservice-based system should be as decoupled as possible to one another.
 
 ### REST service
 
@@ -131,7 +153,7 @@ calls as messages, whose content is then forwarded as replies. The actor
 doesn't spawn children to handle incoming messages, but rather executes the
 processing directly. Indeed such processing consists mostly of task-based
 asynchronous I/O operations, which can be executed directly in the actor system
-execution context, without the need to wrap them into a child actor. In order
+execution context, without the need to wrap it into a child actor. In order
 not to overload the gRPC server with requests, a simple client-side capping
 mechanism on the number of pending requests has been implemented.
 
