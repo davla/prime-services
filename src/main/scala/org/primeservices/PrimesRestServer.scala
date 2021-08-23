@@ -142,7 +142,7 @@ object PrimesRestServer {
       case Success(binding) =>
         val address = binding.localAddress
         system.log.info(
-          "Server online at http://{}:{}/",
+          "REST server started at http://{}:{}/",
           address.getHostString,
           address.getPort
         )
@@ -152,7 +152,7 @@ object PrimesRestServer {
     }
   }
 
-  def main(args: Array[String]): Unit = {
+  def apply(): Unit = {
     ActorSystem[Nothing](httpServerActor, "PrimesRestServer")
   }
 }

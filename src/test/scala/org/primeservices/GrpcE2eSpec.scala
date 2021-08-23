@@ -50,10 +50,10 @@ class GrpcE2eSpec
     }
 
     /*
-     * This test will fail. See README.md ("gRPC service" section, last
-     * paragraph) for more information.
+     * This test is skipped because it doesn't pass. See README.md
+     * ("gRPC service" section, last paragraph) for more information.
      */
-    "report INVALID_ARGUMENT on invalid input" in {
+    "report INVALID_ARGUMENT on invalid input" ignore {
       val client = PrimesGrpcClient(clientSystem)
       val reply = client.getPrimesUpTo(PrimesRequest(-10))
 

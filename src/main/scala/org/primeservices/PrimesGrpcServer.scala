@@ -48,11 +48,12 @@ object PrimesGrpcServer {
     val interface = config.getString("primes.grpc.interface")
     val port = config.getInt("primes.grpc.port")
     val binding = Http().newServerAt(interface, port).bind(service)
-    binding.onComplete {
+
+    binding.andThen {
       case Success(binding) =>
         val address = binding.localAddress
         system.log.info(
-          "Server online at http://{}:{}/",
+          "gRPC server started at http://{}:{}/",
           address.getHostString,
           address.getPort
         )
@@ -60,11 +61,9 @@ object PrimesGrpcServer {
         system.log.error("Failed to bind HTTP endpoint, terminating system", ex)
         system.terminate()
     }
-
-    binding
   }
 
-  def main(args: Array[String]): Unit = {
+  def apply(): Future[Http.ServerBinding] = {
     implicit val conf = ConfigFactory
       // We need to make sure that HTTP/2 is enabled for gRPC to work
       .parseString("akka.http.server.preview.enable-http2 = on")

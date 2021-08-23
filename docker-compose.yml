@@ -14,7 +14,7 @@ services:
     <<: *build
     command:
     - '-Dserver-interface=0.0.0.0'
-    - 'runMain org.primeservices.PrimesGrpcServer'
+    - 'run grpc'
 
   rest:
     <<: *build
@@ -22,15 +22,15 @@ services:
     - grpc
 
     ports:
-    - target: 80
-      published: 5000
+    - target: 8080
+      published: 8080
       protocol: tcp
       mode: host
 
     command:
     - '-Dserver-interface=0.0.0.0'
     - '-Dprimes.grpc.host=grpc'
-    - 'runMain org.primeservices.PrimesRestServer'
+    - 'run rest'
 
   test:
     <<: *build
