@@ -7,7 +7,7 @@ import com.typesafe.config.ConfigFactory
 
 object PrimesGrpcClient {
   def apply(implicit system: ActorSystem[Nothing]): PrimesServiceClient = {
-    val config = ConfigFactory.load().resolve()
+    val config = ConfigFactory.load.resolve
     val grpcHost = config.getString("primes.grpc.host")
     val grpcPort = config.getInt("primes.grpc.port")
 

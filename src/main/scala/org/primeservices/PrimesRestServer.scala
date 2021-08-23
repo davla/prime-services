@@ -117,9 +117,7 @@ object PrimesRestServer {
     implicit val actorSystem = context.system
     implicit val executionContext = actorSystem.executionContext
 
-    val maxPendingGrpcRequests = ConfigFactory
-      .load()
-      .resolve()
+    val maxPendingGrpcRequests = ConfigFactory.load.resolve
       .getInt("primes.rest.max-pending-grpc-requests")
     val primesBackend =
       context.spawn(PrimesBackend(maxPendingGrpcRequests), "PrimesBackendActor")
@@ -135,7 +133,7 @@ object PrimesRestServer {
   )(implicit system: ActorSystem[_]): Unit = {
     implicit val executionContext = system.executionContext
 
-    val config = ConfigFactory.load().resolve()
+    val config = ConfigFactory.load.resolve
     val interface = config.getString("primes.rest.interface")
     val port = config.getInt("primes.rest.port")
     val futureBinding = Http().newServerAt(interface, port).bind(routes)

@@ -19,13 +19,12 @@ class PrimesGrpcService(private val computer: PrimesComputer)(implicit
     Future(computer(in.upTo))
       .transform(
         s = PrimesResponse(_),
-        f = { error =>
-          (error match {
-            case _ if error.isInstanceOf[IllegalArgumentException] =>
-              Status.INVALID_ARGUMENT
-                .augmentDescription(error.getMessage())
-            case _ => Status.fromThrowable(error)
-          }).asRuntimeException()
+        f = {
+          case ex: IllegalArgumentException =>
+            Status.INVALID_ARGUMENT
+              .augmentDescription(ex.getMessage)
+              .asRuntimeException
+          case ex => Status.fromThrowable(ex).asRuntimeException
         }
       )
 }
@@ -45,18 +44,20 @@ object PrimesGrpcServer {
 
     val service = PrimesServiceHandler(PrimesGrpcService()(ec))
 
-    val config = ConfigFactory.load().resolve()
+    val config = ConfigFactory.load.resolve
     val interface = config.getString("primes.grpc.interface")
     val port = config.getInt("primes.grpc.port")
     val binding = Http().newServerAt(interface, port).bind(service)
     binding.onComplete {
       case Success(binding) =>
         val address = binding.localAddress
-        println(
-          s"gRPC server bound to ${address.getHostString}:${address.getPort}"
+        system.log.info(
+          "Server online at http://{}:{}/",
+          address.getHostString,
+          address.getPort
         )
       case Failure(ex) =>
-        println(s"Failed to bind gRPC endpoint, terminating system: $ex")
+        system.log.error("Failed to bind HTTP endpoint, terminating system", ex)
         system.terminate()
     }
 
@@ -67,8 +68,8 @@ object PrimesGrpcServer {
     implicit val conf = ConfigFactory
       // We need to make sure that HTTP/2 is enabled for gRPC to work
       .parseString("akka.http.server.preview.enable-http2 = on")
-      .resolve()
-      .withFallback(ConfigFactory.load().resolve())
+      .resolve
+      .withFallback(ConfigFactory.load.resolve)
     implicit val system: ActorSystem[Nothing] =
       ActorSystem[Nothing](Behaviors.empty, "PrimesGrpcServer", conf)
 

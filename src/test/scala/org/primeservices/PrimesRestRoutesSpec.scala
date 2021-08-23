@@ -81,7 +81,7 @@ class PrimesRestRoutesSpec
       val backendBehavior = Behaviors.receiveMessage[PrimesBackend.Method] {
         case PrimesBackend.GetPrimes(upTo, replyTo) =>
           upTo should be(0)
-          replyTo ! StatusReply.Error(new RuntimeException())
+          replyTo ! StatusReply.Error(new RuntimeException)
           Behaviors.same
       }
       val probe = testKit.createTestProbe[PrimesBackend.Method]()

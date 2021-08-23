@@ -41,7 +41,7 @@ class PrimesGrpcServiceSpec
       val input = -10
 
       val computePrimes = mockFunction[Int, Seq[Int]]
-      computePrimes expects (input) throws new IllegalArgumentException()
+      computePrimes expects (input) throws new IllegalArgumentException
 
       val service = PrimesGrpcService(computePrimes)
 
@@ -61,7 +61,7 @@ class PrimesGrpcServiceSpec
       val input = -10
 
       val computePrimes = mockFunction[Int, Seq[Int]]
-      computePrimes expects (input) throws new RuntimeException()
+      computePrimes expects (input) throws new RuntimeException
 
       val service = PrimesGrpcService(computePrimes)
 

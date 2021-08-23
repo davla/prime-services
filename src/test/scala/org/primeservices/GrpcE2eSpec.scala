@@ -26,7 +26,7 @@ class GrpcE2eSpec
   val serverTestKit = ActorTestKit(
     ConfigFactory
       .parseString("akka.http.server.preview.enable-http2 = on")
-      .resolve()
+      .resolve
   )
   val serverSystem = serverTestKit.system
 
