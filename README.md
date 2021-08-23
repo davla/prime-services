@@ -54,7 +54,7 @@ This logic has been split from the rest since:
 - it improves testability (less mocking, more focus on the logic, etc.)
 
 Testing includes both property and scenario tests. The former has been chosen
-where feasible, being this a mathematical type of logic: whenever scenario
+where feasible, being this a mathematical type of logic. Whenever scenario
 tests have been written instead, the reasons are explained in a comment.
 
 The code is organized so that it supports multiple implementation of the logic
@@ -153,7 +153,7 @@ calls as messages, whose content is then forwarded as replies. The actor
 doesn't spawn children to handle incoming messages, but rather executes the
 processing directly. Indeed such processing consists mostly of task-based
 asynchronous I/O operations, which can be executed directly in the actor system
-execution context, without the need to wrap them into a child actor. In order
+execution context, without the need to wrap it into a child actor. In order
 not to overload the gRPC server with requests, a simple client-side capping
 mechanism on the number of pending requests has been implemented.
 
