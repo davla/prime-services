@@ -123,6 +123,17 @@ in the `PrimesGrpcClient` object. Similarly to `PrimesGrpcServer`, this object
 consists mostly of boilerplate code, and is as such not unit tested, but rather
 end-to-end tested together with the gRPC-HTTP/2 server.
 
+In spite of end-to-end testing, the gRPC client-server interaction still
+doesn't work exactly as expected. The `INVALID_ARGUMENT` error sent by the
+server as a reaction to `IllegalArgumentException` from the domain logic is not
+propagated by the ScalaPB-generated gRPC client, which reports a generic
+`INTERNAL` error. This might be [by design](https://cloud.google.com/apis/design/errors#propagating_errors),
+and it would hence require further investigation, which has not been carried
+out due to lack of time. Nevertheless, unit tests still account for
+`INVALID_ARGUMENT` to be handled differently: not only testing should be not
+concerned with implementation details, but also the components in a
+microservice-based system should be as decoupled as possible to one another.
+
 ### REST service
 
 The REST service is implemented as an Akka HTTP server.
