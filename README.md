@@ -94,11 +94,22 @@ given a request with an upper bound.
 The gRPC service is implemented in the `PrimesGrpcService` class. The class
 doesn't contain a full-blown HTTP/2 server that can be executed, but rather
 only the gRPC service logic. This allows straightforward unit testing of the
-gRPC API, without worrying about the HTTP/2 wrapping layer. The service is a
-standard ScalaPB service, processing requests in a serial fashion in the same
-thread where the request is received. Errors from the main domain logic are
-reported via `google.rpc.Status` protobuf message type, as defined in the
-Google API protobuf Error model.
+gRPC API, without worrying about the HTTP/2 wrapping layer.
+
+The service is a standard ScalaPB service, which processes each request as an
+asynchronous task by means of scala `Future`s. This behavior could have been
+wrapped in an actor-model pattern utilizing the same approach as the REST
+service (described below), which is based on Akka's `ActorContext.pipeToSelf`.
+However, this has not been done due to lack of time and close analogy with
+another part of the system. The scatter-gather pattern was also considered as
+an alternative. Nonetheless, it has not been chosen, as the pattern is mostly
+advantageous for parallelized algorithms that can be partitioned across
+different actors, which is not the case for our domain logic algorithm.
+
+The gRPC service doesn't perform any input validation itself, delegating that
+to the domain logic, in order not to duplicate the validation logic. Errors
+from the main domain logic are reported via `google.rpc.Status` protobuf
+message type, as defined in the Google API protobuf Error model.
 
 The HTTP/2 server is implemented in the `PrimesGrpcServer` object. This is
 where the main method resides, which starts an HTTP/2 server implemented via
